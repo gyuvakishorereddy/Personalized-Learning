@@ -17,9 +17,7 @@ def init_db():
     connection = get_connection()
     cursor = connection.cursor()
     
-    # Drop existing users table if it exists
-    cursor.execute('DROP TABLE IF EXISTS users')
-    
+    # Initialize database tables (do NOT drop existing tables to preserve user data)
     cursor.executescript(
         '''
         CREATE TABLE IF NOT EXISTS users (
@@ -177,6 +175,20 @@ def init_db():
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id, module_id),
             FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS course_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            course_id INTEGER NOT NULL,
+            topic_id TEXT,
+            status TEXT DEFAULT 'not_started',
+            progress_percentage REAL DEFAULT 0,
+            started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id),
+            FOREIGN KEY(course_id) REFERENCES courses(id),
+            UNIQUE(user_id, course_id, topic_id)
         );
         '''
     )
@@ -680,3 +692,73 @@ def get_user_by_email(email):
     user = cursor.fetchone()
     connection.close()
     return user
+
+
+def save_course_progress(user_id: int, course_id: int, topic_id: str = None, 
+                         status: str = 'in_progress', progress_percentage: float = 0) -> bool:
+    """Save or update user's course progress"""
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        
+        cursor.execute('''
+            INSERT INTO course_progress (user_id, course_id, topic_id, status, progress_percentage, updated_at)
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(user_id, course_id, topic_id) DO UPDATE SET
+                status = excluded.status,
+                progress_percentage = excluded.progress_percentage,
+                updated_at = datetime('now')
+        ''', (user_id, course_id, topic_id, status, progress_percentage))
+        
+        connection.commit()
+        connection.close()
+        return True
+    except Exception as e:
+        print(f"Error saving course progress: {e}")
+        return False
+
+
+def get_user_course_progress(user_id: int, course_id: int = None) -> list:
+    """Get user's progress for a course or all courses"""
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    if course_id:
+        cursor.execute('''
+            SELECT course_id, topic_id, status, progress_percentage, started_at, updated_at
+            FROM course_progress 
+            WHERE user_id = ? AND course_id = ?
+            ORDER BY updated_at DESC
+        ''', (user_id, course_id))
+    else:
+        cursor.execute('''
+            SELECT course_id, topic_id, status, progress_percentage, started_at, updated_at
+            FROM course_progress 
+            WHERE user_id = ?
+            ORDER BY updated_at DESC
+        ''', (user_id,))
+    
+    results = cursor.fetchall()
+    connection.close()
+    return [dict(row) for row in results]
+
+
+def get_user_enrolled_courses(user_id: int) -> list:
+    """Get list of courses the user has started (enrolled in)"""
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    cursor.execute('''
+        SELECT DISTINCT course_id, MIN(started_at) as enrolled_at,
+               MAX(progress_percentage) as best_progress,
+               MAX(updated_at) as last_activity
+        FROM course_progress 
+        WHERE user_id = ?
+        GROUP BY course_id
+        ORDER BY last_activity DESC
+    ''', (user_id,))
+    
+    results = cursor.fetchall()
+    connection.close()
+    return [dict(row) for row in results]
+
