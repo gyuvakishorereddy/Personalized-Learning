@@ -1,182 +1,1299 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dashboard - Personalized Learning</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <style>
-            body { background: #f4f6fb; }
-            .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 2rem 0; }
-            .card { border-radius: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-            .card-header { border-radius: 1rem 1rem 0 0; font-weight: 600; font-size: 1.1rem; }
-            .btn-primary { background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%); border: none; }
-            .btn-success { background: linear-gradient(90deg, #28a745 60%, #85e085 100%); border: none; }
-            .btn-warning { background: linear-gradient(90deg, #ffc107 60%, #ffe082 100%); border: none; color: #212529; }
-            .btn-career { background: linear-gradient(90deg, #667eea 60%, #764ba2 100%); border: none; }
-            .card-title { color: #007bff; }
-            .card-ongoing { border-left: 6px solid #28a745; }
-            .card-available { border-left: 6px solid #007bff; }
-            .card-user { border-left: 6px solid #ffc107; }
-            .card-career { border-left: 6px solid #667eea; }
-            .bg-gradient { background: linear-gradient(90deg, #e3f2fd 60%, #fce4ec 100%); }
-            .dashboard-title-available { color:#007bff; letter-spacing:1px; }
-            .dashboard-title-ongoing { color:#28a745; letter-spacing:1px; }
-            .dashboard-title-your { color:#ffc107; letter-spacing:1px; }
-            .progress-custom-height { height: 8px; }
-        </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Personalized Learning</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ============================================
+           PREMIUM CUSTOM COLOR PALETTE
+           ============================================ */
+        :root {
+            /* Primary Colors - Deep Ocean Teal */
+            --primary-deep: #0D4F4F;
+            --primary-main: #1A7A7A;
+            --primary-light: #2BA3A3;
+            --primary-glow: rgba(43, 163, 163, 0.15);
+
+            /* Accent Colors - Warm Coral Sunset */
+            --accent-deep: #B85450;
+            --accent-main: #E86B67;
+            --accent-light: #FF9E9A;
+            --accent-glow: rgba(232, 107, 103, 0.15);
+
+            /* Success Colors - Forest Emerald */
+            --success-deep: #1B5E3D;
+            --success-main: #2D8B5A;
+            --success-light: #4ABA7A;
+            --success-glow: rgba(45, 139, 90, 0.15);
+
+            /* Warning Colors - Golden Amber */
+            --warning-deep: #B8860B;
+            --warning-main: #DAA520;
+            --warning-light: #F4C430;
+
+            /* Neutral Colors */
+            --bg-body: #F7F9FC;
+            --bg-soft: #EEF2F7;
+            --text-primary: #1A2B3C;
+            --text-secondary: #5A6B7C;
+            --text-muted: #8A9BAC;
+            --border-light: rgba(26, 43, 60, 0.08);
+
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-main) 50%, var(--primary-light) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-deep) 0%, var(--accent-main) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-deep) 0%, var(--success-main) 100%);
+            --gradient-hero: linear-gradient(135deg, #0D4F4F 0%, #1A7A7A 40%, #2BA3A3 100%);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Premium Navbar */
+        .nav-premium {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-premium:hover {
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-brand:hover {
+            transform: translateX(5px);
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-brand:hover .brand-icon {
+            transform: rotate(-5deg) scale(1.08);
+            box-shadow: 0 8px 25px rgba(26, 122, 122, 0.3);
+        }
+
+        .brand-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--bg-soft);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .user-badge:hover {
+            background: var(--primary-glow);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid var(--accent-main);
+            color: var(--accent-main);
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-main);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: var(--gradient-hero);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+            animation: heroFloat 8s ease-in-out infinite;
+        }
+
+        @keyframes heroFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(10deg);
+                opacity: 0.8;
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+        }
+
+        .hero-greeting {
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-icon {
+            font-size: 1.2rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 500px;
+            line-height: 1.6;
+            animation: slideInUp 0.8s ease-out 0.1s both;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-8px) scale(1.03);
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .section-header:hover .section-icon {
+            transform: rotate(-5deg) scale(1.1);
+        }
+
+        .section-icon.progress {
+            background: var(--gradient-success);
+        }
+
+        .section-icon.available {
+            background: var(--gradient-primary);
+        }
+
+        .section-icon.quiz {
+            background: linear-gradient(135deg, var(--warning-deep), var(--warning-main));
+        }
+
+        .section-icon.career {
+            background: var(--gradient-accent);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Premium Course Cards */
+        .course-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-light);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            animation: cardSlideUp 0.6s ease-out both;
+        }
+
+        @keyframes cardSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .course-card:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .course-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .course-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .course-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .course-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px rgba(13, 79, 79, 0.18);
+        }
+
+        .card-accent {
+            height: 6px;
+            background: var(--gradient-primary);
+            transition: height 0.3s ease;
+        }
+
+        .course-card:hover .card-accent {
+            height: 8px;
+        }
+
+        .card-accent.ongoing {
+            background: var(--gradient-success);
+        }
+
+        .card-body-premium {
+            padding: 1.75rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-icon-wrap {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-glow);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: var(--primary-main);
+            margin-bottom: 1.25rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .course-card:hover .course-icon-wrap {
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 0 10px 25px var(--primary-glow);
+        }
+
+        .course-icon-wrap.ongoing {
+            background: var(--success-glow);
+            color: var(--success-main);
+        }
+
+        .course-card:hover .course-icon-wrap.ongoing {
+            box-shadow: 0 10px 25px var(--success-glow);
+        }
+
+        .course-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .course-card:hover .course-title {
+            color: var(--primary-main);
+        }
+
+        .course-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+            flex: 1;
+        }
+
+        /* Progress Bar Premium */
+        .progress-premium {
+            height: 10px;
+            background: var(--bg-soft);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+
+        .progress-bar-premium {
+            height: 100%;
+            background: var(--gradient-success);
+            border-radius: 10px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-bar-premium::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress-percent {
+            font-weight: 700;
+            color: var(--success-main);
+        }
+
+        /* Premium Buttons */
+        .btn-premium {
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            cursor: pointer;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+
+        .btn-premium.primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-premium.primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(26, 122, 122, 0.35);
+        }
+
+        .btn-premium.success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 4px 15px var(--success-glow);
+        }
+
+        .btn-premium.success:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(45, 139, 90, 0.35);
+        }
+
+        .btn-premium.warning {
+            background: linear-gradient(135deg, var(--warning-deep), var(--warning-main));
+            color: white;
+        }
+
+        .btn-premium.accent {
+            background: var(--gradient-accent);
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        /* Sidebar Cards */
+        .sidebar-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-light);
+            margin-bottom: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: cardSlideUp 0.6s ease-out both;
+        }
+
+        .sidebar-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .sidebar-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .sidebar-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .sidebar-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .sidebar-header i {
+            font-size: 1.3rem;
+        }
+
+        .sidebar-header.quiz {
+            background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(244, 196, 48, 0.05));
+            color: var(--warning-deep);
+        }
+
+        .sidebar-header.camera {
+            background: linear-gradient(135deg, var(--primary-glow), rgba(43, 163, 163, 0.05));
+            color: var(--primary-deep);
+        }
+
+        .sidebar-header.career {
+            background: linear-gradient(135deg, var(--accent-glow), rgba(232, 107, 103, 0.05));
+            color: var(--accent-deep);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .sidebar-body {
+            padding: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.25rem 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.6rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .feature-list li:hover {
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+
+        .feature-list li i {
+            color: var(--success-main);
+            font-size: 1rem;
+        }
+
+        /* Video Container - Professional Focus Monitor */
+        .focus-monitor-wrapper {
+            position: relative;
+            padding: 4px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            margin: 0 auto;
+            max-width: 280px;
+        }
+
+        .video-inner {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .video-inner video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 16px;
+        }
+
+        .video-inner canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .live-indicator {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 50px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            animation: livePulse 1.5s infinite;
+        }
+
+        @keyframes livePulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 0 6px rgba(255, 71, 87, 0);
+            }
+        }
+
+        .emotion-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--success-glow), rgba(45, 139, 90, 0.08));
+            border-radius: 14px;
+            margin-top: 1rem;
+            border: 1px solid rgba(45, 139, 90, 0.2);
+        }
+
+        .emotion-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .emotion-info {
+            text-align: left;
+        }
+
+        .emotion-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .emotion-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--success-deep);
+            text-transform: capitalize;
+        }
+
+        .focus-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .focus-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--bg-soft);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .focus-stat i {
+            color: var(--primary-main);
+        }
+
+        .focus-stat strong {
+            color: var(--text-primary);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Modal Premium */
+        .modal-premium .modal-content {
+            border-radius: 24px;
+            border: none;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-premium .modal-header {
+            background: var(--gradient-primary);
+            padding: 1.5rem 2rem;
+            border: none;
+        }
+
+        .modal-premium .modal-title {
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-premium .modal-body {
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .modal-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--primary-glow);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: var(--primary-main);
+            animation: modalBounce 0.6s ease-out;
+        }
+
+        @keyframes modalBounce {
+            0% {
+                transform: scale(0);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-modal {
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-modal.cancel {
+            background: var(--bg-soft);
+            color: var(--text-secondary);
+        }
+
+        .btn-modal.cancel:hover {
+            background: #e0e5eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-modal.confirm {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-modal.confirm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px var(--success-glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem;
+                margin: 0 1rem 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
 </head>
+
 <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold fs-4" href="#">
-                    <i class="bi bi-mortarboard"></i> Personalized Learning
+    <!-- Premium Navigation -->
+    <nav class="nav-premium">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                    <div class="brand-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <span class="brand-text">LearnPro</span>
                 </a>
                 <div class="d-flex align-items-center gap-3">
-                    <span class="text-secondary"><i class="bi bi-person-circle me-2"></i>Welcome, {{ username }}</span>
-                    <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    <div class="user-badge">
+                        <div class="user-avatar">{{ username[0]|upper if username else 'U' }}</div>
+                        <span class="text-secondary fw-medium">{{ username }}</span>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="btn-logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
                     </a>
                 </div>
             </div>
-        </nav>
-    <!-- Modern Dashboard UI -->
-        <div class="dashboard-container">
-            <div class="row">
-                <!-- Left Column: Available & Ongoing Courses -->
-                <div class="col-lg-7 mb-4">
-                    <!-- Available Courses -->
-                    <h2 class="mb-4 text-center fw-bold dashboard-title-available">
-                        <i class="bi bi-book me-2"></i>Available Courses
-                    </h2>
-                    <div class="row g-4 justify-content-center">
-                        {% for course in available_courses %}
-                        <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
-                            <div class="card h-100 border-primary shadow-sm">
-                                <div class="card-header bg-primary text-white text-center fw-bold fs-5">
-                                    <i class="bi bi-book-half me-2"></i>{{ course['title'] }}
-                                </div>
-                                <div class="card-body d-flex flex-column">
-                                    <p class="card-text text-muted mb-3">{{ course['description'] }}</p>
-                                    <a href="/start_course/{{ course['id'] }}" class="btn btn-primary mt-auto rounded-pill px-4 py-2">
-                                        <i class="bi bi-play-circle me-2"></i>Start Course
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <p class="hero-greeting">
+                    <i class="bi bi-hand-wave hero-icon"></i>
+                    WELCOME BACK
+                </p>
+                <h1 class="hero-title">Ready to continue<br>your journey, {{ username }}?</h1>
+                <p class="hero-subtitle">Pick up where you left off or explore new courses to expand your skills.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ ongoing_courses|length if ongoing_courses else 0 }}</div>
+                        <div class="stat-label">In Progress</div>
                     </div>
-                    <!-- Ongoing Courses -->
-                    {% if ongoing_courses %}
-                    <h2 class="mb-4 text-center fw-bold dashboard-title-ongoing">
-                        <i class="bi bi-arrow-repeat me-2"></i>Ongoing Courses
-                    </h2>
-                    <div class="row g-4 justify-content-center">
-                        {% for course in ongoing_courses %}
-                        <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
-                            <div class="card h-100 border-success shadow-sm">
-                                <div class="card-header bg-success text-white text-center fw-bold fs-5">
-                                    <i class="bi bi-arrow-repeat me-2"></i>{{ course['title'] }}
-                                </div>
-                                <div class="card-body d-flex flex-column">
-                                    <p class="card-text text-muted mb-3">{{ course['description'][:100] }}{% if course['description']|length > 100 %}...{% endif %}</p>
-                                    {% if course.progress %}
-                                    <div class="mb-2">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span class="small text-secondary">Progress</span>
-                                            <span class="small text-secondary">{{ "%.1f"|format(course.progress.percentage) }}%</span>
-                                        </div>
-                                        <div class="progress progress-custom-height">
-                                            <div class="progress-bar bg-success" role="progressbar" aria-valuemin="0" aria-valuemax="100" title="Progress: {{ '%.1f'|format(course.progress.percentage) }}%" data-progress="{{ course.progress.percentage }}"></div>
-                                        </div>
-                                        <span class="small text-secondary">{{ course.progress.completed_topics }}/{{ course.progress.total_topics }} topics completed</span>
-                                    </div>
-                                    {% endif %}
-                                    <a href="/start_course/{{ course['id'] }}" class="btn btn-success w-100 mt-2 rounded-pill px-4 py-2">
-                                        <i class="bi bi-arrow-right-circle me-2"></i>{% if course.progress and course.progress.status == 'completed' %}Review Course{% else %}Continue Learning{% endif %}
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                    <div class="stat-item">
+                        <div class="stat-number">{{ available_courses|length if available_courses else 0 }}</div>
+                        <div class="stat-label">Available</div>
                     </div>
-                    {% endif %}
+                    <div class="stat-item">
+                        <div class="stat-number">{{ (ongoing_courses|length + available_courses|length) if
+                            ongoing_courses and available_courses else 0 }}</div>
+                        <div class="stat-label">Total Courses</div>
+                    </div>
                 </div>
-                <!-- Right Column: Enhanced Quiz & Emotion Detection -->
-                <div class="col-lg-5 mb-4">
-                    <!-- Enhanced Quiz Card -->
-                    <div class="card border-warning shadow-sm mb-4">
-                        <div class="card-header bg-warning text-dark fw-bold">
-                            <i class="bi bi-brain"></i> Enhanced Quiz System
-                        </div>
-                        <div class="card-body">
-                            <p>Test your programming knowledge with our comprehensive quiz system:</p>
-                            <ul class="list-unstyled mb-3">
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Topic-wise questions</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Course-specific quizzes</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Multiple difficulty levels</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Detailed explanations</li>
-                            </ul>
-                            <button id="quizTriggerBtnRight" class="btn btn-warning w-100 rounded-pill">
-                                <i class="bi bi-mortarboard me-2"></i>Take Personalized Quiz
-                            </button>
-                        </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Ongoing Courses -->
+                {% if ongoing_courses %}
+                <div class="section-header">
+                    <div class="section-icon progress">
+                        <i class="bi bi-arrow-repeat"></i>
                     </div>
-                    <!-- Concentration Detection Card -->
-                    <div class="card border-info shadow-sm mb-4">
-                        <div class="card-header bg-info text-white fw-bold d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-camera-video"></i> Concentration Detection</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex flex-column align-items-center gap-3">
-                                <div class="emotion-video-container mb-3" style="position:relative; text-align:center;">
-                                    <video id="videoInput" width="320" height="240" autoplay muted style="border-radius:10px;box-shadow:0 2px 8px #ccc;"></video>
-                                    <!-- Face detection overlay canvas -->
-                                    <canvas id="faceDetectionCanvas" width="320" height="240" style="position:absolute; top:0; left:0; pointer-events:none; border-radius:10px;"></canvas>
+                    <h2 class="section-title">Continue Learning</h2>
+                </div>
+                <div class="row g-4 mb-5">
+                    {% for course in ongoing_courses %}
+                    <div class="col-md-6">
+                        <div class="course-card">
+                            <div class="card-accent ongoing"></div>
+                            <div class="card-body-premium">
+                                <div class="course-icon-wrap ongoing">
+                                    {% if 'css' in course['title']|lower or 'responsive' in course['title']|lower %}
+                                    <i class="bi bi-filetype-css"></i>
+                                    {% elif 'java' in course['title']|lower and 'javascript' not in
+                                    course['title']|lower %}
+                                    <i class="bi bi-filetype-java"></i>
+                                    {% elif 'javascript' in course['title']|lower or 'js' in course['title']|lower %}
+                                    <i class="bi bi-filetype-js"></i>
+                                    {% elif 'python' in course['title']|lower %}
+                                    <i class="bi bi-filetype-py"></i>
+                                    {% elif 'aws' in course['title']|lower or 'cloud' in course['title']|lower %}
+                                    <i class="bi bi-cloud-fill"></i>
+                                    {% elif 'react' in course['title']|lower %}
+                                    <i class="bi bi-diagram-3-fill"></i>
+                                    {% elif 'node' in course['title']|lower %}
+                                    <i class="bi bi-hdd-network-fill"></i>
+                                    {% elif 'database' in course['title']|lower or 'sql' in course['title']|lower %}
+                                    <i class="bi bi-database-fill"></i>
+                                    {% elif 'html' in course['title']|lower %}
+                                    <i class="bi bi-filetype-html"></i>
+                                    {% elif 'algorithm' in course['title']|lower or 'data structure' in
+                                    course['title']|lower %}
+                                    <i class="bi bi-cpu-fill"></i>
+                                    {% elif 'machine learning' in course['title']|lower or 'ai' in course['title']|lower
+                                    %}
+                                    <i class="bi bi-robot"></i>
+                                    {% elif 'git' in course['title']|lower %}
+                                    <i class="bi bi-git"></i>
+                                    {% elif 'docker' in course['title']|lower or 'devops' in course['title']|lower %}
+                                    <i class="bi bi-box-seam-fill"></i>
+                                    {% elif 'api' in course['title']|lower %}
+                                    <i class="bi bi-plug-fill"></i>
+                                    {% elif 'security' in course['title']|lower %}
+                                    <i class="bi bi-shield-lock-fill"></i>
+                                    {% else %}
+                                    <i class="bi bi-code-slash"></i>
+                                    {% endif %}
                                 </div>
-                                <div id="concentration-status" class="badge bg-info-subtle text-info-emphasis py-2 px-3 mb-2" aria-live="polite">
-                                    Concentration detection active.
+                                <h3 class="course-title">{{ course['title'] }}</h3>
+                                <p class="course-description">{{ course['description'][:100] }}{% if
+                                    course['description']|length > 100 %}...{% endif %}</p>
+                                {% if course.progress %}
+                                <div class="progress-info">
+                                    <span>{{ course.progress.completed_topics }}/{{ course.progress.total_topics }}
+                                        topics</span>
+                                    <span class="progress-percent">{{ "%.0f"|format(course.progress.percentage)
+                                        }}%</span>
                                 </div>
-                                <div id="face-count-status" class="badge bg-secondary text-white py-1 px-2" style="font-size:0.8rem;">
-                                    Faces detected: 0
+                                <div class="progress-premium">
+                                    <div class="progress-bar-premium" style="width: {{ course.progress.percentage }}%;">
+                                    </div>
                                 </div>
+                                {% endif %}
+                                <a href="/start_course/{{ course['id'] }}" class="btn-premium success">
+                                    <i class="bi bi-play-circle-fill"></i>
+                                    Continue Learning
+                                </a>
                             </div>
                         </div>
                     </div>
-                    <!-- Career Recommendations Card -->
-                    <div class="card border-career shadow-sm mb-4">
-                        <div class="card-header bg-gradient text-white fw-bold" style="background: linear-gradient(90deg, #667eea 60%, #764ba2 100%) !important;">
-                            <i class="bi bi-rocket-takeoff"></i> Career Pathways
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Available Courses -->
+                <div class="section-header">
+                    <div class="section-icon available">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <h2 class="section-title">Available Courses</h2>
+                </div>
+                <div class="row g-4">
+                    {% for course in available_courses %}
+                    <div class="col-md-6">
+                        <div class="course-card">
+                            <div class="card-accent"></div>
+                            <div class="card-body-premium">
+                                <div class="course-icon-wrap">
+                                    {% if 'css' in course['title']|lower or 'responsive' in course['title']|lower %}
+                                    <i class="bi bi-filetype-css"></i>
+                                    {% elif 'java' in course['title']|lower and 'javascript' not in
+                                    course['title']|lower %}
+                                    <i class="bi bi-filetype-java"></i>
+                                    {% elif 'javascript' in course['title']|lower or 'js' in course['title']|lower %}
+                                    <i class="bi bi-filetype-js"></i>
+                                    {% elif 'python' in course['title']|lower %}
+                                    <i class="bi bi-filetype-py"></i>
+                                    {% elif 'aws' in course['title']|lower or 'cloud' in course['title']|lower %}
+                                    <i class="bi bi-cloud-fill"></i>
+                                    {% elif 'react' in course['title']|lower %}
+                                    <i class="bi bi-diagram-3-fill"></i>
+                                    {% elif 'node' in course['title']|lower %}
+                                    <i class="bi bi-hdd-network-fill"></i>
+                                    {% elif 'database' in course['title']|lower or 'sql' in course['title']|lower %}
+                                    <i class="bi bi-database-fill"></i>
+                                    {% elif 'html' in course['title']|lower %}
+                                    <i class="bi bi-filetype-html"></i>
+                                    {% elif 'algorithm' in course['title']|lower or 'data structure' in
+                                    course['title']|lower %}
+                                    <i class="bi bi-cpu-fill"></i>
+                                    {% elif 'machine learning' in course['title']|lower or 'ai' in course['title']|lower
+                                    %}
+                                    <i class="bi bi-robot"></i>
+                                    {% elif 'git' in course['title']|lower %}
+                                    <i class="bi bi-git"></i>
+                                    {% elif 'docker' in course['title']|lower or 'devops' in course['title']|lower %}
+                                    <i class="bi bi-box-seam-fill"></i>
+                                    {% elif 'api' in course['title']|lower %}
+                                    <i class="bi bi-plug-fill"></i>
+                                    {% elif 'security' in course['title']|lower %}
+                                    <i class="bi bi-shield-lock-fill"></i>
+                                    {% else %}
+                                    <i class="bi bi-code-slash"></i>
+                                    {% endif %}
+                                </div>
+                                <h3 class="course-title">{{ course['title'] }}</h3>
+                                <p class="course-description">{{ course['description'] }}</p>
+                                <button type="button" class="btn-premium primary start-course-btn"
+                                    data-course-id="{{ course['id'] }}" data-course-title="{{ course['title'] }}"
+                                    data-bs-toggle="modal" data-bs-target="#startCourseModal">
+                                    <i class="bi bi-rocket-takeoff-fill"></i>
+                                    Start Learning
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <p>Explore different career paths and learn the technologies you need to succeed:</p>
-                            <ul class="list-unstyled mb-3">
-                                <li><i class="bi bi-check-circle text-success me-2"></i>7+ Career pathways</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Tech stack recommendations</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Personalized learning paths</li>
-                                <li><i class="bi bi-check-circle text-success me-2"></i>Track your progress</li>
-                            </ul>
-                            <a href="/career-recommendations" class="btn btn-career w-100 rounded-pill">
-                                <i class="bi bi-arrow-right-circle me-2"></i>Explore Careers
-                            </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quiz Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-header quiz">
+                        <i class="bi bi-lightbulb-fill"></i>
+                        <h3>Quick Quiz</h3>
+                    </div>
+                    <div class="sidebar-body">
+                        <p class="text-secondary mb-3">Test your knowledge with personalized quizzes!</p>
+                        <ul class="feature-list">
+                            <li><i class="bi bi-check-circle-fill"></i> Topic-wise questions</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Instant feedback</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Track your scores</li>
+                        </ul>
+                        <button id="quizTriggerBtnRight" class="btn-premium warning w-100">
+                            <i class="bi bi-play-fill"></i>
+                            Take Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Focus Monitor Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-header camera">
+                        <i class="bi bi-eye-fill"></i>
+                        <h3>Focus Monitor</h3>
+                    </div>
+                    <div class="sidebar-body">
+                        <div class="focus-monitor-wrapper">
+                            <div class="video-inner">
+                                <video id="videoInput" autoplay muted playsinline></video>
+                                <canvas id="faceDetectionCanvas"></canvas>
+                                <div class="live-indicator">
+                                    <span class="live-dot"></span>
+                                    LIVE
+                                </div>
+                            </div>
                         </div>
+                        <div class="emotion-display">
+                            <div class="emotion-icon">
+                                <i class="bi bi-emoji-smile-fill"></i>
+                            </div>
+                            <div class="emotion-info">
+                                <div class="emotion-label">Current Emotion</div>
+                                <div class="emotion-value" id="concentration-status">Analyzing...</div>
+                            </div>
+                        </div>
+                        <div class="focus-stats">
+                            <div class="focus-stat">
+                                <i class="bi bi-activity"></i>
+                                <span>Status: <strong>Active</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-header career">
+                        <i class="bi bi-rocket-takeoff-fill"></i>
+                        <h3>Career Paths</h3>
+                    </div>
+                    <div class="sidebar-body">
+                        <p class="text-secondary mb-3">Discover your ideal tech career!</p>
+                        <ul class="feature-list">
+                            <li><i class="bi bi-check-circle-fill"></i> 7+ Career pathways</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Personalized roadmaps</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Industry insights</li>
+                        </ul>
+                        <a href="/career-recommendations" class="btn-premium accent w-100">
+                            <i class="bi bi-compass-fill"></i>
+                            Explore Careers
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@21stdev/ui/dist/21stdev-ui.min.js"></script>
-    <script src="{{ url_for('static', filename='js/webcam_hybrid.js') }}"></script>
+    <!-- Premium Start Course Modal -->
+    <div class="modal fade modal-premium" id="startCourseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-rocket-takeoff-fill"></i>
+                        Start Your Journey
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-icon">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <h4 id="modalCourseTitle" class="fw-bold mb-2">Course Title</h4>
+                    <p class="text-secondary">Ready to begin? You can track your progress and continue anytime!</p>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn-modal cancel" data-bs-dismiss="modal">
+                            Maybe Later
+                        </button>
+                        <button type="button" class="btn-modal confirm" id="confirmStartCourse">
+                            <i class="bi bi-play-fill me-2"></i>Let's Go!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/webcam_emotion.js') }}"></script>
     <script>
-    const quizBtn = document.getElementById('quizTriggerBtnRight');
-    if (quizBtn) {
-        quizBtn.addEventListener('click', function() {
-            window.location.href = '/quiz_page';
+        // Modal course selection
+        let selectedCourseId = null;
+        document.querySelectorAll('.start-course-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                selectedCourseId = this.getAttribute('data-course-id');
+                document.getElementById('modalCourseTitle').textContent = this.getAttribute('data-course-title');
+            });
         });
-    }
+
+        document.getElementById('confirmStartCourse').addEventListener('click', function () {
+            if (selectedCourseId) {
+                window.location.href = '/start_course/' + selectedCourseId;
+            }
+        });
+
+        // Animated progress bars
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar-premium').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => { bar.style.width = width; }, 100);
+            });
+        }, 300);
+
+        // Quiz button handler
+        const quizBtn = document.getElementById('quizTriggerBtnRight');
+        if (quizBtn) {
+            quizBtn.addEventListener('click', function () {
+                window.location.href = '/quiz_page';
+            });
+        }
     </script>
-    {% include 'quiz_modal.html' %}
 </body>
+
 </html>
