@@ -404,7 +404,8 @@ def filter_courses_with_quiz(courses):
 @app.route('/')
 def index():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        # Show landing page for non-authenticated users
+        return render_template('index.html')
     
     # Redirect authenticated users to dashboard
     return redirect(url_for('dashboard'))
@@ -560,7 +561,9 @@ def course_modules(course_id):
         
         # Get submodules for each module
         all_modules = []
-        for module in modules:
+        previous_module_completed = True  # First module is always unlocked
+        
+        for index, module in enumerate(modules):
             module_dict = dict(module)
             cursor.execute('''
                 SELECT id, title, description, content, submodule_order
@@ -568,29 +571,73 @@ def course_modules(course_id):
                 WHERE module_id = ?
                 ORDER BY submodule_order
             ''', (module_dict['id'],))
-            module_dict['submodules'] = [dict(sm) for sm in cursor.fetchall()]
+            submodules_raw = [dict(sm) for sm in cursor.fetchall()]
             
-            # Add status information
-            if user_id:
-                try:
-                    cursor.execute('''
-                        SELECT status, score
-                        FROM module_progress 
-                        WHERE user_id = ? AND module_id = ?
-                    ''', (user_id, module_dict['id']))
-                    progress = cursor.fetchone()
-                    if progress:
-                        module_dict['status'] = progress['status']
-                        module_dict['score'] = progress['score']
-                    else:
-                        module_dict['status'] = 'not_started'
-                        module_dict['score'] = 0
-                except:
-                    module_dict['status'] = 'not_started'
-                    module_dict['score'] = 0
+            # Check each submodule's completion status and add locking
+            submodules_with_status = []
+            previous_submodule_completed = True  # First submodule is always unlocked
+            
+            for sm_index, sm in enumerate(submodules_raw):
+                # Check if this submodule is completed
+                sm_completed = False
+                if user_id:
+                    try:
+                        cursor.execute('''
+                            SELECT status FROM submodule_progress 
+                            WHERE user_id = ? AND submodule_id = ?
+                        ''', (user_id, sm['id']))
+                        sm_progress = cursor.fetchone()
+                        if sm_progress and sm_progress['status'] == 'completed':
+                            sm_completed = True
+                            sm['status'] = 'completed'
+                        else:
+                            sm['status'] = 'not_started'
+                    except:
+                        sm['status'] = 'not_started'
+                else:
+                    sm['status'] = 'not_started'
+                
+                # Sequential locking for submodules:
+                # First submodule is always unlocked, rest are locked until previous is completed
+                if sm_index == 0:
+                    sm['locked'] = False
+                else:
+                    sm['locked'] = not previous_submodule_completed
+                
+                previous_submodule_completed = sm_completed
+                submodules_with_status.append(sm)
+            
+            module_dict['submodules'] = submodules_with_status
+            
+            # Calculate module status based on submodule completions
+            total_submodules = len(submodules_with_status)
+            completed_submodules = sum(1 for sm in submodules_with_status if sm.get('status') == 'completed')
+            
+            if total_submodules > 0:
+                if completed_submodules == total_submodules:
+                    module_status = 'completed'
+                elif completed_submodules > 0:
+                    module_status = 'in_progress'
+                else:
+                    module_status = 'not_started'
             else:
-                module_dict['status'] = 'not_started'
-                module_dict['score'] = 0
+                module_status = 'not_started'
+            
+            module_dict['status'] = module_status
+            module_dict['score'] = int((completed_submodules / total_submodules * 100) if total_submodules > 0 else 0)
+            module_dict['completed_submodules'] = completed_submodules
+            module_dict['total_submodules'] = total_submodules
+            
+            # Sequential locking: Module is locked unless:
+            # 1. It's the first module (index == 0), OR
+            # 2. The previous module was completed
+            if index == 0:
+                module_dict['locked'] = False
+            else:
+                module_dict['locked'] = not previous_module_completed
+            
+            # Update for next iteration: check if this module is completed
+            previous_module_completed = (module_status == 'completed')
             
             all_modules.append(module_dict)
         
@@ -673,37 +720,45 @@ def course_detail(course_id):
 
 @app.route('/start_course/<int:course_id>')
 def start_course_redirect(course_id):
-    return redirect(url_for('course_modules', course_id=course_id))
-    # Allow access without login for testing purposes
-    user_id = session.get('user_id', None)
+    user_id = session.get('user_id')
     
-    try:
-        # Get course details
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM courses WHERE id = ?', (course_id,))
-        course = cursor.fetchone()
-        
-        if not course:
-            conn.close()
-            abort(404)
-        
-        # Get the first topic for this course
-        cursor.execute('SELECT * FROM topics WHERE course_id = ? ORDER BY topic_order LIMIT 1', (course_id,))
-        first_topic = cursor.fetchone()
-        conn.close()
-        
-        if first_topic:
-            # Redirect to the first topic
-            return redirect(url_for('view_topic', course_id=course_id, topic_id=first_topic[0]))
-        else:
-            # No topics found, redirect to mock topic for testing
-            return redirect(url_for('view_topic', course_id=course_id, topic_id=f"{course_id}_0_0"))
+    # Save progress when user starts a course
+    if user_id:
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
             
-    except Exception as e:
-        print(f"Error in start_course: {e}")
-        # Fallback: redirect to mock topic for testing
-        return redirect(url_for('view_topic', course_id=course_id, topic_id=f"{course_id}_0_0"))
+            # Check if user already has progress for this course
+            cursor.execute('''
+                SELECT id FROM course_progress 
+                WHERE user_id = ? AND course_id = ?
+            ''', (user_id, course_id))
+            
+            existing = cursor.fetchone()
+            
+            if not existing:
+                # Insert new progress record - course started
+                cursor.execute('''
+                    INSERT INTO course_progress (user_id, course_id, topic_id, status, progress_percentage, started_at, updated_at)
+                    VALUES (?, ?, ?, 'in_progress', 0, datetime('now'), datetime('now'))
+                ''', (user_id, course_id, 'start'))
+                conn.commit()
+                print(f"DEBUG: Started course {course_id} for user {user_id}")
+            else:
+                # Update last accessed time
+                cursor.execute('''
+                    UPDATE course_progress 
+                    SET updated_at = datetime('now')
+                    WHERE user_id = ? AND course_id = ?
+                ''', (user_id, course_id))
+                conn.commit()
+                print(f"DEBUG: Updated course {course_id} access for user {user_id}")
+            
+            conn.close()
+        except Exception as e:
+            print(f"Error saving course start progress: {e}")
+    
+    return redirect(url_for('course_modules', course_id=course_id))
 
 def get_next_topic_id(course_id, current_topic_id):
     """Get the next topic ID for navigation"""
@@ -1089,6 +1144,252 @@ def continue_course(course_id):
         logger.error(f"Error in continue_course: {e}")
         # Fallback to first topic
         return redirect(url_for('view_topic', course_id=course_id, topic_id=f"{course_id}_0_0"))
+
+# Module Status API - Update module progress
+@app.route('/api/module_status', methods=['POST'])
+def update_module_status():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+    
+    try:
+        data = request.get_json()
+        module_id = data.get('module_id')
+        status = data.get('status', 'started')  # 'started', 'in_progress', 'completed'
+        course_id = data.get('course_id')
+        
+        if not module_id:
+            return jsonify({'success': False, 'error': 'Module ID required'}), 400
+        
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Update module_progress table
+        cursor.execute('''
+            INSERT INTO module_progress (user_id, module_id, status, updated_at)
+            VALUES (?, ?, ?, datetime('now'))
+            ON CONFLICT(user_id, module_id) DO UPDATE SET
+                status = excluded.status,
+                updated_at = datetime('now')
+        ''', (user_id, module_id, status))
+        
+        # If course_id is provided, also update course progress
+        if course_id:
+            # Count completed modules for this course
+            cursor.execute('''
+                SELECT COUNT(*) as completed
+                FROM module_progress mp
+                JOIN modules m ON mp.module_id = m.id
+                WHERE mp.user_id = ? AND m.course_id = ? AND mp.status = 'completed'
+            ''', (user_id, course_id))
+            completed = cursor.fetchone()['completed']
+            
+            # Count total modules for this course
+            cursor.execute('''
+                SELECT COUNT(*) as total FROM modules WHERE course_id = ?
+            ''', (course_id,))
+            total = cursor.fetchone()['total']
+            
+            # Calculate progress percentage
+            progress = (completed / total * 100) if total > 0 else 0
+            
+            # Update course_progress
+            cursor.execute('''
+                INSERT INTO course_progress (user_id, course_id, topic_id, status, progress_percentage, updated_at)
+                VALUES (?, ?, 'overall', ?, ?, datetime('now'))
+                ON CONFLICT(user_id, course_id, topic_id) DO UPDATE SET
+                    status = excluded.status,
+                    progress_percentage = excluded.progress_percentage,
+                    updated_at = datetime('now')
+            ''', (user_id, course_id, 
+                  'completed' if progress >= 100 else 'in_progress',
+                  progress))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'module_id': module_id,
+            'status': status,
+            'message': f'Module status updated to {status}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating module status: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Complete Module API - Mark module as completed and update course progress
+@app.route('/api/module/complete', methods=['POST'])
+def complete_module():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+    
+    try:
+        data = request.get_json()
+        course_id = data.get('course_id')
+        module_id = data.get('module_id')
+        module_index = data.get('module_index', 0)
+        
+        if not course_id or not module_id:
+            return jsonify({'success': False, 'error': 'Course ID and Module ID required'}), 400
+        
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Mark module as completed
+        cursor.execute('''
+            INSERT INTO module_progress (user_id, module_id, status, score, updated_at)
+            VALUES (?, ?, 'completed', 100, datetime('now'))
+            ON CONFLICT(user_id, module_id) DO UPDATE SET
+                status = 'completed',
+                score = 100,
+                updated_at = datetime('now')
+        ''', (user_id, module_id))
+        
+        # Count total modules started/completed by this user for this course
+        # Using a simpler approach: count based on module_index
+        cursor.execute('''
+            SELECT COUNT(DISTINCT module_id) as completed_modules
+            FROM module_progress
+            WHERE user_id = ? AND status = 'completed'
+        ''', (user_id,))
+        completed_count = cursor.fetchone()['completed_modules']
+        
+        # Assume 5 modules per course (as shown in dashboard)
+        total_modules = 5
+        progress_percentage = min(100, (completed_count / total_modules) * 100)
+        
+        # Update course progress with more specific tracking
+        cursor.execute('''
+            UPDATE course_progress 
+            SET progress_percentage = ?,
+                status = CASE WHEN ? >= 100 THEN 'completed' ELSE 'in_progress' END,
+                updated_at = datetime('now')
+            WHERE user_id = ? AND course_id = ?
+        ''', (progress_percentage, progress_percentage, user_id, course_id))
+        
+        # If no rows updated (first module completion), insert
+        if cursor.rowcount == 0:
+            cursor.execute('''
+                INSERT INTO course_progress (user_id, course_id, topic_id, status, progress_percentage, updated_at)
+                VALUES (?, ?, 'module', 'in_progress', ?, datetime('now'))
+            ''', (user_id, course_id, progress_percentage))
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"DEBUG: Module {module_id} completed. Progress: {progress_percentage}% ({completed_count}/{total_modules})")
+        
+        return jsonify({
+            'success': True,
+            'module_id': module_id,
+            'status': 'completed',
+            'progress_percentage': round(progress_percentage, 1),
+            'completed_modules': completed_count,
+            'total_modules': total_modules
+        })
+        
+    except Exception as e:
+        logger.error(f"Error completing module: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Submodule Complete API - Mark submodule as completed
+@app.route('/api/submodule/complete', methods=['POST'])
+def complete_submodule():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+    
+    try:
+        data = request.get_json()
+        course_id = data.get('course_id')
+        module_id = data.get('module_id')
+        submodule_id = data.get('submodule_id')
+        
+        if not submodule_id:
+            return jsonify({'success': False, 'error': 'Submodule ID required'}), 400
+        
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Ensure the submodule_progress table exists
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS submodule_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                course_id INTEGER,
+                module_id INTEGER,
+                submodule_id INTEGER NOT NULL,
+                status TEXT DEFAULT 'completed',
+                completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, submodule_id)
+            )
+        ''')
+        
+        # Mark submodule as completed
+        cursor.execute('''
+            INSERT INTO submodule_progress (user_id, course_id, module_id, submodule_id, status, completed_at)
+            VALUES (?, ?, ?, ?, 'completed', datetime('now'))
+            ON CONFLICT(user_id, submodule_id) DO UPDATE SET
+                status = 'completed',
+                completed_at = datetime('now')
+        ''', (user_id, course_id or 0, module_id or 0, submodule_id))
+        
+        # Count completed submodules for this module
+        cursor.execute('''
+            SELECT COUNT(*) as completed
+            FROM submodule_progress
+            WHERE user_id = ? AND module_id = ? AND status = 'completed'
+        ''', (user_id, module_id or 0))
+        completed_submodules = cursor.fetchone()['completed']
+        
+        # Get total submodules for this module
+        total_submodules = 3  # Default 3 submodules per module
+        try:
+            cursor.execute('''
+                SELECT COUNT(*) as total FROM submodules WHERE module_id = ?
+            ''', (module_id,))
+            result = cursor.fetchone()
+            if result and result['total'] > 0:
+                total_submodules = result['total']
+        except:
+            pass
+        
+        # Calculate module progress percentage
+        module_progress = min(100, (completed_submodules / total_submodules) * 100)
+        
+        # Update overall course progress
+        if course_id:
+            # Calculate overall progress: each completed submodule adds to total
+            progress_increment = 20.0 / total_submodules  # 20% per module, divided by submodules
+            cursor.execute('''
+                UPDATE course_progress 
+                SET progress_percentage = MIN(100, progress_percentage + ?),
+                    updated_at = datetime('now')
+                WHERE user_id = ? AND course_id = ?
+            ''', (progress_increment, user_id, course_id))
+        
+        conn.commit()
+        conn.close()
+        
+        print(f"DEBUG: Submodule {submodule_id} completed! Module progress: {module_progress}%")
+        
+        return jsonify({
+            'success': True,
+            'submodule_id': submodule_id,
+            'status': 'completed',
+            'module_progress': round(module_progress, 1),
+            'completed_submodules': completed_submodules,
+            'total_submodules': total_submodules
+        })
+        
+    except Exception as e:
+        logger.error(f"Error completing submodule: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # Exercise Progress Route
 @app.route('/api/exercise/complete', methods=['POST'])
@@ -2064,29 +2365,7 @@ def save_emotion_data():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-@app.route('/api/module_status', methods=['POST'])
-def update_module_status():
-    """Update the status of a module for the current user."""
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'User not logged in'})
-    user_id = session['user_id']
-    data = request.json
-    module_id = data.get('module_id')
-    status = data.get('status', 'started')
-    score = data.get('score', 0)
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO module_progress (user_id, module_id, status, score)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(user_id, module_id) DO UPDATE SET status=excluded.status, score=excluded.score
-        ''', (user_id, module_id, status, score))
-        conn.commit()
-        conn.close()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+# Note: /api/module_status is defined at line ~1100 with enhanced functionality
 
 @app.route('/api/emotion_analyze', methods=['POST'])
 def emotion_analyze():
