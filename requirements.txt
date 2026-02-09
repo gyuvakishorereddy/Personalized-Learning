@@ -6,7 +6,6 @@ opencv-python
 opencv-contrib-python
 numpy
 mediapipe
-dlib
 imutils
 fer
 moviepy
