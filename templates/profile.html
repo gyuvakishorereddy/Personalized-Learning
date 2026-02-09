@@ -1,159 +1,525 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Personalized Learning</title>
+    <title>Profile - LearnPro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --primary-deep: #0D4F4F;
+            --primary-main: #1A7A7A;
+            --primary-light: #2BA3A3;
+            --primary-glow: rgba(43, 163, 163, 0.15);
+            --success-deep: #1B5E3D;
+            --success-main: #2D8B5A;
+            --success-glow: rgba(45, 139, 90, 0.15);
+            --accent-main: #E86B67;
+            --bg-body: #F7F9FC;
+            --bg-soft: #EEF2F7;
+            --text-primary: #1A2B3C;
+            --text-secondary: #5A6B7C;
+            --text-muted: #8A9BAC;
+            --border-light: rgba(26, 43, 60, 0.08);
+            --gradient-primary: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-main) 50%, var(--primary-light) 100%);
+            --gradient-success: linear-gradient(135deg, var(--success-deep) 0%, var(--success-main) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            padding-top: 70px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-        .profile-container {
-            background: white;
+
+        /* Navbar */
+        .nav-premium {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
         }
+
+        .brand-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-nav {
+            background: transparent;
+            border: 2px solid var(--border-light);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-nav:hover {
+            border-color: var(--primary-main);
+            color: var(--primary-main);
+            background: var(--primary-glow);
+        }
+
+        .btn-nav.logout {
+            border-color: rgba(232, 107, 103, 0.3);
+            color: var(--accent-main);
+        }
+
+        .btn-nav.logout:hover {
+            background: rgba(232, 107, 103, 0.1);
+            border-color: var(--accent-main);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-top: 90px;
+            padding-bottom: 3rem;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
         .profile-header {
+            background: var(--gradient-primary);
+            padding: 2rem;
             text-align: center;
-            margin-bottom: 30px;
+            position: relative;
         }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        }
+
         .profile-avatar {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            margin-bottom: 20px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
             object-fit: cover;
-            border: 5px solid #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-main);
+            margin: 0 auto 1rem;
+            position: relative;
+            z-index: 1;
         }
-        .stats-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.2s;
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+            position: relative;
+            z-index: 1;
         }
-        .stats-card:hover {
+
+        .profile-date {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-body {
+            padding: 1.5rem;
+        }
+
+        .btn-edit {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-section h5 i {
+            color: var(--primary-main);
+        }
+
+        .info-section p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-soft);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
-        .progress {
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Progress Section */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary-main);
+        }
+
+        .course-progress {
+            margin-bottom: 1.25rem;
+        }
+
+        .course-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-progress-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .course-progress-percent {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--primary-main);
+        }
+
+        .progress-bar-bg {
             height: 10px;
+            background: var(--bg-soft);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-success);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Activity Section */
+        .activity-item {
+            background: var(--bg-soft);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-info h6 {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-info small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .activity-date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .modal-title {
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-main);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .btn-save {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .btn-save:hover {
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <!-- Navbar -->
+    <nav class="nav-premium">
         <div class="container">
-            <a class="navbar-brand" href="/dashboard">Personalized Learning</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/profile">Profile</a>
-                    </li>
-                </ul>
-                <div class="navbar-nav">
-                    <a href="/logout" class="nav-link">
-                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/dashboard" class="nav-brand">
+                    <div class="brand-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <span class="brand-text">LearnPro</span>
+                </a>
+                <div class="nav-links">
+                    <a href="/dashboard" class="btn-nav">
+                        <i class="bi bi-grid-fill"></i>
+                        Dashboard
+                    </a>
+                    <a href="/logout" class="btn-nav logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
                     </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="row">
-            <!-- Profile Information -->
-            <div class="col-md-4">
-                <div class="profile-container">
-                    <div class="profile-header">
-                        <img src="{{ user.avatar_url|default('/static/img/default-avatar.png') }}" alt="Profile Picture" class="profile-avatar">
-                        <h2>{{ user.username }}</h2>
-                        <p class="text-muted">Member since {{ user.join_date.strftime('%B %Y') }}</p>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                            <i class="fas fa-edit me-2"></i>Edit Profile
-                        </button>
-                    </div>
-                    <div class="mt-4">
-                        <h5><i class="fas fa-user me-2"></i>About Me</h5>
-                        <p>{{ user.bio|default('No bio yet. Click Edit Profile to add one!') }}</p>
-                        <hr>
-                        <h5><i class="fas fa-graduation-cap me-2"></i>Learning Goals</h5>
-                        <p>{{ user.learning_goals|default('No learning goals set yet.') }}</p>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Profile Sidebar -->
+                <div class="col-lg-4">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <h2 class="profile-name">{{ user.username }}</h2>
+                            <p class="profile-date">Member since {{ user.join_date.strftime('%B %Y') }}</p>
+                        </div>
+                        <div class="profile-body">
+                            <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                <i class="bi bi-pencil-fill"></i>
+                                Edit Profile
+                            </button>
+
+                            <div class="info-section mt-4">
+                                <h5><i class="bi bi-person-circle"></i> About Me</h5>
+                                <p>{{ user.bio|default('No bio yet. Click Edit Profile to add one!') }}</p>
+                            </div>
+
+                            <div class="info-section">
+                                <h5><i class="bi bi-trophy-fill"></i> Learning Goals</h5>
+                                <p>{{ user.learning_goals|default('No learning goals set yet.') }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Learning Statistics -->
-            <div class="col-md-8">
-                <div class="profile-container">
-                    <h3><i class="fas fa-chart-line me-2"></i>Learning Progress</h3>
-                    
-                    <!-- Overall Statistics -->
-                    <div class="row mt-4">
-                        <div class="col-md-4">
-                            <div class="stats-card text-center">
-                                <h4>{{ stats.completed_courses }}</h4>
-                                <p class="text-muted mb-0">Courses Completed</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stats-card text-center">
-                                <h4>{{ stats.total_hours }}h</h4>
-                                <p class="text-muted mb-0">Learning Hours</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stats-card text-center">
-                                <h4>{{ stats.completion_rate }}%</h4>
-                                <p class="text-muted mb-0">Completion Rate</p>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Stats & Progress -->
+                <div class="col-lg-8">
+                    <div class="profile-card" style="border-radius: 20px; padding: 1.5rem;">
+                        <h3 class="section-title mb-4">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            Learning Statistics
+                        </h3>
 
-                    <!-- Course Progress -->
-                    <h4 class="mt-4 mb-3">Course Progress</h4>
-                    {% for course in user.courses %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">{{ course.title }}</h6>
-                            <span class="text-muted">{{ course.progress }}%</span>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" 
-                                style="width: {{ course.progress }}%" 
-                                aria-valuenow="{{ course.progress }}" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100"
-                                title="{{ course.progress }}% Complete">
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">{{ stats.completed_courses }}</div>
+                                <div class="stat-label">Courses Completed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{ stats.total_hours }}h</div>
+                                <div class="stat-label">Learning Hours</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{ stats.completion_rate }}%</div>
+                                <div class="stat-label">Completion Rate</div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
 
-                    <!-- Learning Activity -->
-                    <h4 class="mt-4 mb-3">Recent Activity</h4>
-                    <div class="list-group">
+                        <!-- Course Progress -->
+                        <h4 class="section-title">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            Course Progress
+                        </h4>
+                        {% for course in user.courses %}
+                        <div class="course-progress">
+                            <div class="course-progress-header">
+                                <span class="course-progress-title">{{ course.title }}</span>
+                                <span class="course-progress-percent">{{ course.progress }}%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: {{ course.progress }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Recent Activity -->
+                        <h4 class="section-title mt-4">
+                            <i class="bi bi-clock-history"></i>
+                            Recent Activity
+                        </h4>
                         {% for activity in user.recent_activity %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">{{ activity.description }}</h6>
-                                    <small class="text-muted">{{ activity.course }}</small>
-                                </div>
-                                <small class="text-muted">{{ activity.date }}</small>
+                        <div class="activity-item">
+                            <div class="activity-info">
+                                <h6>{{ activity.description }}</h6>
+                                <small>{{ activity.course }}</small>
                             </div>
+                            <span class="activity-date">{{ activity.date }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -164,11 +530,11 @@
 
     <!-- Edit Profile Modal -->
     <div class="modal fade" id="editProfileModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><i class="bi bi-pencil-fill me-2"></i>Edit Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="post" action="/update_profile" enctype="multipart/form-data">
                     <div class="modal-body">
@@ -178,7 +544,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" value="{{ user.username }}" required>
+                            <input type="text" class="form-control" name="username" value="{{ user.username }}"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
@@ -186,20 +553,22 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Bio</label>
-                            <textarea class="form-control" name="bio" rows="3">{{ user.bio }}</textarea>
+                            <textarea class="form-control" name="bio" rows="2">{{ user.bio }}</textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Learning Goals</label>
-                            <textarea class="form-control" name="learning_goals" rows="3">{{ user.learning_goals }}</textarea>
+                            <textarea class="form-control" name="learning_goals"
+                                rows="2">{{ user.learning_goals }}</textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Change Password</label>
-                            <input type="password" class="form-control" name="new_password" placeholder="Leave blank to keep current password">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" name="new_password"
+                                placeholder="Leave blank to keep current">
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer border-0">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="submit" class="btn-save">Save Changes</button>
                     </div>
                 </form>
             </div>
@@ -208,4 +577,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
