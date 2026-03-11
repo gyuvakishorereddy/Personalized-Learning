@@ -263,4 +263,4 @@ For issues or questions:
 **Happy Learning!** 🎓📚
 
 For the latest updates and issues, visit the project repository.
-contact me for any queries
+contact me for any queries.
